@@ -13,6 +13,7 @@ from ui.preset_widget import PresetWidget
 from ui.preset_dialog import PresetDialog
 from core.preset_manager import PresetManager, Preset
 from core.time_range_calculator import TimeMode
+from utils.platform_helper import get_log_font_style
 from utils.time_parser import format_seconds
 
 
@@ -25,6 +26,7 @@ class CutterControlPanel(QWidget):
     # 信号
     start_cutting = Signal(str, object, object)  # (模式, A值, B值)
     cancel_cutting = Signal()
+    apply_default_to_all = Signal()  # v1.1.2: 将默认时间应用到所有文件
     
     def __init__(self, preset_manager: PresetManager, parent=None):
         super().__init__(parent)
@@ -36,9 +38,17 @@ class CutterControlPanel(QWidget):
         """初始化界面"""
         layout = QVBoxLayout(self)
         
-        # 时间输入区
+        # 时间输入区（v1.1.2: 标明为默认时间）
         self._time_input = TimeInputWidget()
+        self._time_input.setTitle("默认时间设置（应用于新添加的文件）")
         layout.addWidget(self._time_input)
+        
+        # v1.1.2: 应用到所有文件按钮
+        self._btn_apply_all = QPushButton("将默认时间应用到所有文件")
+        self._btn_apply_all.setToolTip("将所有文件的时间重置为当前默认值")
+        self._btn_apply_all.setStyleSheet("QPushButton { color: #1565C0; }")
+        self._btn_apply_all.clicked.connect(self.apply_default_to_all.emit)
+        layout.addWidget(self._btn_apply_all)
         
         # 预设区
         preset_group = QGroupBox("预设")
@@ -121,7 +131,7 @@ class CutterControlPanel(QWidget):
         self._log_text = QTextEdit()
         self._log_text.setReadOnly(True)
         self._log_text.setMinimumHeight(100)
-        self._log_text.setStyleSheet("font-family: 'Consolas', 'Courier New', monospace; font-size: 12px;")
+        self._log_text.setStyleSheet(get_log_font_style())
         log_layout.addWidget(self._log_text)
         
         log_group.setLayout(log_layout)

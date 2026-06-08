@@ -26,9 +26,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 
 from config import get_config
 from ui.main_window import MainWindow
+from utils.platform_helper import get_icon_path, get_platform
 
 
 def check_dependencies():
@@ -49,8 +51,13 @@ def setup_application():
     
     # 应用信息
     app.setApplicationName("视频极简裁剪工具")
-    app.setApplicationVersion("1.0.0")
+    app.setApplicationVersion("1.1.2")
     app.setOrganizationName("VideoCutter")
+    
+    # 设置应用图标
+    icon_path = get_icon_path()
+    if icon_path:
+        app.setWindowIcon(QIcon(icon_path))
     
     # 全局样式
     app.setStyle("Fusion")
@@ -112,8 +119,10 @@ def setup_application():
 
 def main():
     """主函数"""
+    plat = get_platform()
     print("=" * 40)
-    print("视频极简裁剪工具 v1.0")
+    print("视频极简裁剪工具 v1.1.2")
+    print(f"平台: {plat}")
     print("=" * 40)
     
     # 检查依赖

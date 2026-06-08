@@ -139,15 +139,19 @@ class FFmpegWorker(QObject):
     @Slot()
     def run(self):
         """执行 ffmpeg 命令"""
+        self._exit_code = -1
+        self._error_text = ""
         self.started.emit()
         
         process = QProcess()
-        process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.SeparateChannels)
         
         process.start(self._ffmpeg_path, self._args)
         
         if not process.waitForStarted(3000):
-            self.finished.emit(-1, self._output_path, "无法启动 ffmpeg 进程")
+            self._exit_code = -1
+            self._error_text = "无法启动 ffmpeg 进程"
+            self.finished.emit(-1, self._output_path, self._error_text)
             return
         
         # 等待完成，期间检查取消标志
@@ -156,13 +160,17 @@ class FFmpegWorker(QObject):
                 process.terminate()
                 if not process.waitForFinished(3000):
                     process.kill()
-                self.finished.emit(-2, self._output_path, "用户取消")
+                self._exit_code = -2
+                self._error_text = "用户取消"
+                self.finished.emit(-2, self._output_path, self._error_text)
                 return
         
-        exit_code = process.exitCode()
-        output = process.readAllStandardError().data().decode("utf-8", errors="replace")
+        self._exit_code = process.exitCode()
+        error_data = process.readAllStandardError()
+        self._error_text = bytes(error_data).decode("utf-8", errors="replace") if error_data else ""
         
-        self.finished.emit(exit_code, self._output_path, output if exit_code != 0 else "")
+        self.finished.emit(self._exit_code, self._output_path,
+                           self._error_text if self._exit_code != 0 else "")
     
     def cancel(self):
         """标记取消"""

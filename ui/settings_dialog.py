@@ -148,10 +148,30 @@ class SettingsDialog(QDialog):
         self._config.sync()
     
     def _browse_ffmpeg(self):
-        """浏览选择 ffmpeg"""
-        path, _ = QFileDialog.getOpenFileName(self, "选择 ffmpeg", "", "可执行文件 (*)")
+        """浏览选择 ffmpeg，同时自动填充 ffprobe"""
+        import platform as _platform
+        
+        # 平台相关的文件过滤器
+        if _platform.system() == "Windows":
+            file_filter = "可执行文件 (*.exe);;所有文件 (*)"
+        else:
+            file_filter = "所有文件 (*)"
+        
+        path, _ = QFileDialog.getOpenFileName(self, "选择 ffmpeg", "", file_filter)
         if path:
             self._edit_ffmpeg.setText(path)
+            # 自动推断 ffprobe 路径（同目录，同扩展名）
+            import os
+            dirname = os.path.dirname(path)
+            basename = os.path.basename(path)
+            # 推断 ffprobe 文件名（保留扩展名）
+            if basename.endswith(".exe"):
+                ffprobe_name = "ffprobe.exe"
+            else:
+                ffprobe_name = "ffprobe"
+            ffprobe_path = os.path.join(dirname, ffprobe_name)
+            if os.path.isfile(ffprobe_path) and os.access(ffprobe_path, os.X_OK):
+                self._edit_ffprobe.setText(ffprobe_path)
     
     def _browse_ffprobe(self):
         """浏览选择 ffprobe"""

@@ -214,7 +214,7 @@ class PresetManager(QObject):
                     preset = Preset.from_dict(item)
                     if preset.name:
                         self._presets[preset.name] = preset
-        except (json.JSONDecodeError, IOError, KeyError):
+        except (json.JSONDecodeError, IOError, KeyError, UnicodeDecodeError, ValueError):
             pass
     
     def _save(self):
