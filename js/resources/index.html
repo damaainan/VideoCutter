@@ -1,0 +1,240 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>视频极简裁剪工具</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="header">
+      <h1>视频极简裁剪工具</h1>
+      <div class="header-actions">
+        <button id="settingsBtn" class="btn btn-secondary">设置</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="file-section">
+        <div class="section-header">
+          <h2>视频文件</h2>
+          <div class="file-actions">
+            <button id="addFilesBtn" class="btn btn-primary">添加文件</button>
+            <button id="clearFilesBtn" class="btn btn-secondary">清空列表</button>
+          </div>
+        </div>
+        <div id="dropZone" class="drop-zone">
+          <p>点击此处选择视频文件，或使用下方“添加文件”按钮</p>
+          <input type="file" id="fileInput" multiple accept="video/*" style="display: none;">
+        </div>
+        <div class="file-list-container">
+          <table id="fileList" class="file-list">
+            <thead>
+              <tr>
+                <th>文件名</th>
+                <th>时长</th>
+                <th>时间配置</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="fileListBody">
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="control-section">
+        <div class="preset-box">
+          <h3>预设</h3>
+          <div class="preset-controls">
+            <select id="presetSelect" class="input-field">
+              <option value="">选择预设...</option>
+            </select>
+            <button id="savePresetBtn" class="btn btn-sm btn-secondary">保存</button>
+            <button id="deletePresetBtn" class="btn btn-sm btn-danger">删除</button>
+          </div>
+        </div>
+
+        <div class="time-box">
+          <h3>时间设置</h3>
+          <div class="time-mode-toggle">
+            <label class="radio-label">
+              <input type="radio" name="timeMode" value="trim_head_tail" checked>
+              <span>去头去尾</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="timeMode" value="absolute_start_end">
+              <span>绝对起止</span>
+            </label>
+          </div>
+          
+          <div id="trimModeInputs" class="time-inputs">
+            <div class="input-group">
+              <label>去掉开头 (A)</label>
+              <input type="text" id="trimA" class="input-field" placeholder="例如: 10">
+              <span id="trimAPreview" class="time-preview"></span>
+            </div>
+            <div class="input-group">
+              <label>去掉结尾 (B)</label>
+              <input type="text" id="trimB" class="input-field" placeholder="例如: 5">
+              <span id="trimBPreview" class="time-preview"></span>
+            </div>
+          </div>
+
+          <div id="absoluteModeInputs" class="time-inputs" style="display: none;">
+            <div class="input-group">
+              <label>开始时间</label>
+              <input type="text" id="absStart" class="input-field" placeholder="例如: 0">
+              <span id="absStartPreview" class="time-preview"></span>
+            </div>
+            <div class="input-group">
+              <label>结束时间</label>
+              <input type="text" id="absEnd" class="input-field" placeholder="例如: 60">
+              <span id="absEndPreview" class="time-preview"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="options-box">
+          <h3>选项</h3>
+          <label class="checkbox-label">
+            <input type="checkbox" id="precisionMode">
+            <span>精确模式 (重编码，速度较慢)</span>
+          </label>
+        </div>
+
+        <div class="action-box">
+          <button id="startBtn" class="btn btn-large btn-primary">开始裁剪</button>
+          <button id="cancelBtn" class="btn btn-large btn-secondary" style="display: none;">取消</button>
+        </div>
+
+        <div class="progress-box">
+          <div class="progress-bar-container">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <p id="progressText">准备就绪</p>
+        </div>
+
+        <div class="log-box">
+          <h3>日志</h3>
+          <div id="logArea" class="log-area"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="settingsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>设置</h2>
+        <button id="closeSettingsBtn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label>FFmpeg 路径</label>
+          <input type="text" id="ffmpegPath" class="input-field" placeholder="ffmpeg">
+        </div>
+        <div class="input-group">
+          <label>FFprobe 路径</label>
+          <input type="text" id="ffprobePath" class="input-field" placeholder="ffprobe">
+        </div>
+        <div class="input-group">
+          <label>输出文件后缀</label>
+          <input type="text" id="outputSuffix" class="input-field" placeholder="_1">
+        </div>
+        <div class="input-group">
+          <label>文件冲突策略</label>
+          <select id="conflictStrategy" class="input-field">
+            <option value="rename">自动重命名</option>
+            <option value="overwrite">覆盖</option>
+            <option value="skip">跳过</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveSettingsBtn" class="btn btn-primary">保存</button>
+        <button id="cancelSettingsBtn" class="btn btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="presetModal" class="modal" style="display: none;">
+    <div class="modal-content modal-small">
+      <div class="modal-header">
+        <h2>保存预设</h2>
+        <button id="closePresetModalBtn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label>预设名称</label>
+          <input type="text" id="presetName" class="input-field" placeholder="输入预设名称">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="confirmSavePresetBtn" class="btn btn-primary">保存</button>
+        <button id="cancelPresetBtn" class="btn btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="customTimeModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>自定义时间</h2>
+        <button id="closeCustomTimeBtn" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label class="radio-label">
+          <input type="radio" name="customTimeMode" value="default" checked>
+          <span>使用默认时间</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="customTimeMode" value="custom">
+          <span>自定义时间</span>
+        </label>
+        
+        <div id="customTimeInputs" style="display: none; margin-top: 15px;">
+          <div class="time-mode-toggle">
+            <label class="radio-label">
+              <input type="radio" name="customTrimMode" value="trim_head_tail" checked>
+              <span>去头去尾</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="customTrimMode" value="absolute_start_end">
+              <span>绝对起止</span>
+            </label>
+          </div>
+          
+          <div id="customTrimInputs" class="time-inputs">
+            <div class="input-group">
+              <label>去掉开头 (A)</label>
+              <input type="text" id="customTrimA" class="input-field">
+            </div>
+            <div class="input-group">
+              <label>去掉结尾 (B)</label>
+              <input type="text" id="customTrimB" class="input-field">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveCustomTimeBtn" class="btn btn-primary">确定</button>
+        <button id="cancelCustomTimeBtn" class="btn btn-secondary">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/neutralino.js"></script>
+  <script src="js/utils/time-parser.js"></script>
+  <script src="js/utils/config.js"></script>
+  <script src="js/utils/ffmpeg.js"></script>
+  <script src="js/core/time-range-calculator.js"></script>
+  <script src="js/core/overwrite-policy.js"></script>
+  <script src="js/core/preset-manager.js"></script>
+  <script src="js/core/video-cutter-manager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

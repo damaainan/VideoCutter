@@ -440,7 +440,7 @@ pyinstaller ^
 **macOS：**
 ```bash
 # 将 ffmpeg 和 ffprobe 放在 resources/ffmpeg/ 目录下
-python3 -m PyInstaller  --onedir --windowed --name "VideoCutter" --target-arch arm64 --osx-bundle-identifier com.videocutter.app --icon=resources/icon.icns --add-data "resources:resources" --copy-metadata PySide6 --upx-dir /opt/homebrew/bin  --exclude-module tkinter --exclude-module matplotlib --exclude-module numpy --exclude-module pandas --exclude-module scipy --exclude-module PIL --exclude-module cv2 --exclude-module pytest --exclude-module setuptools --exclude-module pip --exclude-module tkinter  --clean main.py
+python3 -m PyInstaller  --onedir --windowed --name "VideoCutter" --target-arch arm64 --osx-bundle-identifier com.videocutter.app --icon=resources/icon.icns --add-data "resources:resources" --copy-metadata PySide6 --upx-dir /opt/homebrew/bin --clean main.py
 
 pyinstaller \
     --onedir \

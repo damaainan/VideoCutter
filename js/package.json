@@ -1,0 +1,17 @@
+{
+  "name": "video-cutter",
+  "version": "1.1.2",
+  "description": "极简视频裁剪工具 - Neutralinojs 版本",
+  "main": "resources/index.html",
+  "scripts": {
+    "dev": "npx @neutralinojs/neu run",
+    "build": "npx @neutralinojs/neu build",
+    "update": "npx @neutralinojs/neu update"
+  },
+  "keywords": ["video", "ffmpeg", "cutter", "neutralinojs"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@neutralinojs/neu": "^11.1.1"
+  }
+}
